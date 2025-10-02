@@ -30,3 +30,6 @@ pose-estimation-project/
 ├── docs/
 │   └── dev-log/   # 개발일지 (Day1, Day2, ...)
 └── README.md
+<img width="2554" height="1387" alt="image" src="https://github.com/user-attachments/assets/4458fbd6-454a-496e-b1f3-1be066701c2c" />
+<img width="2549" height="1381" alt="image" src="https://github.com/user-attachments/assets/f9f182b6-5505-414c-bc9d-2d9bebb0de94" />
+<img width="1564" height="840" alt="image" src="https://github.com/user-attachments/assets/14325dcc-bcf5-43ce-a6cb-b06c0fc9c66a" />
