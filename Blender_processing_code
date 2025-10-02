@@ -1,0 +1,112 @@
+import bpy
+import csv
+import os
+from mathutils import Matrix
+
+# 1. 아머처(뼈대) 오브젝트의 이름
+ARMATURE_NAME = "Armature" 
+
+# 2. 추출할 본(Bone) 이름 목록
+
+BONE_NAMES = [
+    "clavicle_out_l",
+
+    "clavicle_out_r",
+
+    "thigh_out_l",
+
+    "thigh_out_r",
+
+    "calf_knee_l",
+
+    "calf_knee_r",
+    
+]
+
+
+# 3. 좌표 계산의 기준이 될 본의 이름
+REFERENCE_BONE = "Spine4" 
+
+# 4. CSV 파일 저장 경로
+OUTPUT_FILE_PATH = "C:/Users/OWNER/Desktop/unreal_pose/csv/walking_spine4.csv"
+
+# 5. 스케일 보정 인수 (값이 너무 크거나 작으면 100.0 또는 0.01로 설정)
+# 값이 적절하다면 1.0 유지
+SCALE_FACTOR = 0.01
+
+# ====================================================================
+# 스크립트 본체
+# ====================================================================
+
+def export_relative_bone_coordinates(armature_name, bone_names, ref_bone_name, output_path, scale_factor):
+    if armature_name not in bpy.data.objects:
+        print(f"오류: '{armature_name}' 이름의 아머처 오브젝트를 찾을 수 없습니다.")
+        return
+
+    armature = bpy.data.objects[armature_name]
+    scene = bpy.context.scene
+    start_frame = scene.frame_start
+    end_frame = scene.frame_end
+    
+    if ref_bone_name not in armature.pose.bones:
+        print(f"오류: 기준 본 '{ref_bone_name}'를 아머처에서 찾을 수 없습니다.")
+        return
+
+    try:
+        with open(output_path, 'w', newline='') as csvfile:
+            csv_writer = csv.writer(csvfile)
+            
+            # 헤더(첫 줄) 작성: 프레임, 본 이름, 상대 위치 (X, Y, Z)
+            header = ['Frame']
+            for name in bone_names:
+                header.extend([f'{name}_RelLoc_X', f'{name}_RelLoc_Y', f'{name}_RelLoc_Z'])
+            csv_writer.writerow(header)
+
+            print(f"데이터 추출 시작: {start_frame} 프레임부터 {end_frame} 프레임까지 (기준: {ref_bone_name})")
+            
+            for frame_num in range(start_frame, end_frame + 1):
+                scene.frame_set(frame_num)
+                row_data = [frame_num]
+
+                # 1. 기준 본(spine_03)의 월드 위치 계산
+                ref_pose_bone = armature.pose.bones[ref_bone_name]
+                ref_world_matrix = armature.matrix_world @ ref_pose_bone.matrix
+                ref_world_location = ref_world_matrix.to_translation()
+
+                # 2. 다른 모든 본의 상대 좌표 추출
+                for bone_name in bone_names:
+                    pose_bone = armature.pose.bones[bone_name]
+                    
+                    # 현재 본의 월드 위치 계산
+                    current_world_matrix = armature.matrix_world @ pose_bone.matrix
+                    current_world_location = current_world_matrix.to_translation()
+                    
+                    # 상대 위치 계산: (현재 본의 월드 위치) - (기준 본의 월드 위치)
+                    relative_location = (current_world_location - ref_world_location) / scale_factor
+                    
+                    # (선택 사항) Unreal Engine 축 변환 적용 (YZ 교환 및 Y 반전이 흔함)
+                    # 이전에 테스트하여 찾은 올바른 조합을 사용하세요.
+                    #loc_x = relative_location.x
+                    #loc_y = -relative_location.z  # YZ 교환 및 Y 반전 예시
+                    #loc_z = relative_location.y
+                    
+                    # 만약 축 변환이 필요 없다면:
+                    loc_x = relative_location.x
+                    loc_y = relative_location.y
+                    loc_z = relative_location.z
+                    
+                    row_data.extend([loc_x, loc_y, loc_z])
+                
+                # 3. CSV 파일에 데이터 한 줄 쓰기
+                csv_writer.writerow(row_data)
+
+        print("-" * 30)
+        print(f"✅ 상대 좌표 추출 완료! 총 {end_frame - start_frame + 1} 프레임.")
+        print(f"파일 저장 경로: {output_path}")
+        print("-" * 30)
+
+    except IOError as e:
+        print(f"❌ 오류: 파일 '{output_path}'에 쓸 수 없습니다. {e}")
+
+# 함수 실행
+export_relative_bone_coordinates(ARMATURE_NAME, BONE_NAMES, REFERENCE_BONE, OUTPUT_FILE_PATH, SCALE_FACTOR)
