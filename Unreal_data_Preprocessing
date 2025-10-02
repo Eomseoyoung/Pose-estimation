@@ -1,0 +1,110 @@
+import pandas as pd
+
+b_df = pd.read_csv("Bonedata.csv")
+
+d_dict = {
+    'd_1' : [],
+    'd_2' : [],
+    'd_3' : [],
+    'd_4' : [],
+    'd_5' : [],
+    'd_6' : []
+}
+frames = []
+values = b_df.columns
+for i in range(0, len(values), 18):
+    frame = list(values[i:i+18])
+    if len(frame) < 18:
+        break
+
+    joints = []
+    # 프레임 내부를 3개씩(x,y,z) 자르기 → 총 6개 관절
+    for j in range(0, 18, 3):
+        coord = frame[j:j+3]  # [x, y, z]
+        joints.append(coord)
+
+    frames.append(joints)
+
+rows = []
+for frame in frames:
+    if len(frame) != 6:
+        # 관절이 6개가 아니면 스킵하거나 예외 처리 (필요시 수정)
+        continue
+    row = []
+    for triplet in frame:
+        # triplet = [id, joint_name, coord_str]
+        if len(triplet) != 3:
+            # 형태가 다르면 스킵/보정
+            continue
+        a, b, c = triplet
+        # 개행/보 BOM 등 정리 (원하는 경우)
+        if isinstance(c, str):
+            c = c.replace("\ufeff", "").split("\\n")[0]
+        row.extend([str(a), str(b), str(c)])
+    # 6관절 × 3값 = 18개
+    if len(row) == 18:
+        rows.append(row)
+
+new_df = pd.DataFrame(rows)
+new_df.head()
+
+reindex_dict = {
+    'id' : [],
+    'clavicle_l_x' : [],
+    'clavicle_l_y' : [],
+    'clavicle_l_z' : [],
+    'clavicle_r_x' : [],
+    'clavicle_r_y' : [],
+    'clavicle_r_z' : [],
+    'thigh_l_x' : [],
+    'thigh_l_y' : [],
+    'thigh_l_z' : [],
+    'thigh_r_x' : [],
+    'thigh_r_y' : [],
+    'thigh_r_z' : [],
+    'calf_l_x' : [],
+    'calf_l_y' : [],
+    'calf_l_z' : [],
+    'calf_r_x' : [],
+    'calf_r_y' : [],
+    'calf_r_z' : []
+}
+
+def split_data(data):
+    def check_n(s_n):
+        n = float(s_n.split('=')[1])
+        return round(n, 3)
+    x, y, z = data.split(' ')
+    return check_n(x), check_n(y), check_n(z)
+
+for idx, row in new_df.iterrows():
+    reindex_dict['id'].append(row[0])
+    x, y, z = split_data(row[2])
+    reindex_dict['clavicle_l_x'].append(x)
+    reindex_dict['clavicle_l_y'].append(y)
+    reindex_dict['clavicle_l_z'].append(z)
+    x, y, z = split_data(row[5])
+    reindex_dict['clavicle_r_x'].append(x)
+    reindex_dict['clavicle_r_y'].append(y)
+    reindex_dict['clavicle_r_z'].append(z)
+    x, y, z = split_data(row[8])
+    reindex_dict['thigh_l_x'].append(x)
+    reindex_dict['thigh_l_y'].append(y)
+    reindex_dict['thigh_l_z'].append(z)
+    x, y, z = split_data(row[11])
+    reindex_dict['thigh_r_x'].append(x)
+    reindex_dict['thigh_r_y'].append(y)
+    reindex_dict['thigh_r_z'].append(z)
+    x, y, z = split_data(row[14])
+    reindex_dict['calf_l_x'].append(x)
+    reindex_dict['calf_l_y'].append(y)
+    reindex_dict['calf_l_z'].append(z)
+    x, y, z = split_data(row[17])
+    reindex_dict['calf_r_x'].append(x)
+    reindex_dict['calf_r_y'].append(y)
+    reindex_dict['calf_r_z'].append(z)
+
+f_df = pd.DataFrame(reindex_dict)
+
+f_df.to_csv('result.csv', index_label=False, index = False)
+pd.read_csv('result.csv')
