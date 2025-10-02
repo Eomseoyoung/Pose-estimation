@@ -9,11 +9,13 @@
 ---
 
 ## 전체 파이프라인
+
+```markdown
 ```mermaid
 graph TD
     A[Unreal Engine] --> B[포즈 애니메이션 제작]
     B --> C[Blender]
-    C --> D[좌표 추출 (CSV/JSON)]
+    C --> D[좌표 추출 CSV/JSON]
     D --> E[데이터 전처리]
     E --> F[Pose Estimation 모델 학습]
     F --> G[추론 및 시각화]
