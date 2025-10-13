@@ -10,8 +10,6 @@
 
 ## 전체 파이프라인
 
-```markdown
-```mermaid
 graph TD
     A[Unreal Engine] --> B[포즈 애니메이션 제작]
     B --> C[Blender]
@@ -33,3 +31,21 @@ pose-estimation-project/
 <img width="2554" height="1387" alt="image" src="https://github.com/user-attachments/assets/4458fbd6-454a-496e-b1f3-1be066701c2c" />
 <img width="2549" height="1381" alt="image" src="https://github.com/user-attachments/assets/f9f182b6-5505-414c-bc9d-2d9bebb0de94" />
 <img width="1564" height="840" alt="image" src="https://github.com/user-attachments/assets/14325dcc-bcf5-43ce-a6cb-b06c0fc9c66a" />
+
+
+## 1.state와 behavior의 구분 
+    state의 경우 볼드체로, behavior의 경우 이탤릭체로 구분하기로 함
+    상태 유지 동작과 상태 변화 동작은 한국어로 동일하니 상태 변화 동작을 컬러표기함
+
+
+## 2.학습데이터 형태
+    behavior(3초) → behavior(~3초) → behavior(3초) 약 10초 영상
+    8개 분류 존재 (자기 자신 참조 제외) / 필요시 눕기와 넘어지기 구분 → 그 경우 10개 분류
+    1. 선_상태 섬 → 선_상태 걷기 → 선_상태 섬
+    2. 선_상태 섬 → 선_상태 달리기 → 선_상태 섬
+    3. 선_상태 섬 → 선_상태 앉기(s) → 앉음_상태 앉아있기
+    4. 선_상태 섬 → 선_상태 눕기(넘어지기) → 누움_상태 누워있기 
+    5. 앉음_상태 앉아있기 → 앉음_상태  일어서기(s) → 선_상태 섬
+    6. 앉음_상태 앉아있기 → 앉음_상태  눕기(넘어지기) → 누움_상태 누워있기
+    7. 누움_상태 누워있기 → 누움_상태 일어서기(l) →  선_상태 섬
+    8. 누움_상태 누워있기 → 누움_상태 앉기(l) →  앉은_상태 앉아있기
