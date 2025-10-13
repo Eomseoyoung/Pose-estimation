@@ -10,7 +10,7 @@
 
 ## 전체 파이프라인
 
-graph TD
+
     A[Unreal Engine] --> B[포즈 애니메이션 제작]
     B --> C[Blender]
     C --> D[좌표 추출 CSV/JSON]
